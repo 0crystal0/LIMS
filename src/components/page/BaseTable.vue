@@ -1,0 +1,232 @@
+<template>
+    <div>
+        <div class="crumbs">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item>
+                    <i class="el-icon-lx-cascades"></i> 基础表格
+                </el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
+        <div class="container">
+            <el-table
+                :data="tableData"
+                border
+                class="table"
+                ref="multipleTable"
+                header-cell-class-name="table-header"
+                @selection-change="handleSelectionChange"
+            >
+
+
+
+                
+                <el-table-column prop="id"          label="会议室名称"  width="150" align="center"></el-table-column>
+
+                <el-table-column prop="location"    label="房间号"      width="120" align="center"></el-table-column>
+
+                <el-table-column                    label="容量"        width="120" align="center">
+                    <template slot-scope="scope">{{scope.row.capacity}}人</template>
+                </el-table-column>
+
+                <el-table-column                    label="计算机数量"  width="250" align="center">
+                    <template slot-scope="scope">可用{{scope.row.computerAll - scope.row.computerBad}}台；故障{{scope.row.computerBad}}台</template>
+                </el-table-column>
+
+                <el-table-column label="投影仪状态" align="center" width="180">
+                    <template slot-scope="scope">
+                        <el-tag
+                            :type="scope.row.projectorState=== 0 ?'success':(scope.row.projectorState=== 1 ?'danger':'')"
+                        >
+                            <div v-if="scope.row.projectorState===0">正常</div>
+                            <div v-else>故障</div>
+                        </el-tag>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="当前房间状态" align="center">
+                    <template slot-scope="scope">
+                        <el-tag
+                            :type="scope.row.state=== 0 ?'success':(scope.row.state=== 1 ?'danger':'')"
+                        >
+                            <div v-if="scope.row.state===0">空闲</div>
+                            <div v-else>占用</div>
+                        </el-tag>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="操作" width="180" align="center">
+                    <template slot-scope="scope">
+                        <el-button
+                            type="text"
+                            icon="el-icon-edit"
+                            @click="handleEdit(scope.$index, scope.row)"
+                        >编辑</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+
+
+            <div class="pagination">
+                <el-pagination
+                    background
+                    layout="total, prev, pager, next"
+                    :current-page="query.pageIndex"
+                    :page-size="query.pageSize"
+                    :total="pageTotal"
+                    @current-change="handlePageChange"
+                ></el-pagination>
+            </div>
+        </div>
+
+
+
+
+        <!-- 编辑弹出框 -->
+        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
+            <el-form ref="form" :model="form" label-width="70px">
+
+                <el-form-item label="计算机故障的数量" label-width="70">
+                    <el-input-number v-model="form.computerBad" @change="handleChange" :min="0" :max="form.computerAll" label="描述文字"></el-input-number>
+                    <!--<el-input v-model="form.computerBad"></el-input>-->
+                </el-form-item>
+
+                <el-form-item label="投影仪情况" label-width="70">
+                    <el-select v-model="form.projectorState" placeholder="请选择">
+                        <el-option
+                        v-for="item in options1"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                        </el-option>
+                    </el-select>
+
+                </el-form-item>
+
+                <el-form-item label="当前房间状态" label-width="70">
+                    <el-select v-model="form.state" placeholder="请选择">
+                        <el-option
+                        v-for="item in options2"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                        </el-option>
+                    </el-select>
+
+                    <!--
+                    <el-input v-model="form.address"></el-input>
+                    -->
+                </el-form-item>
+
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveEdit">确 定</el-button>
+            </span>
+        </el-dialog>
+
+
+
+
+    </div>
+</template>
+
+<script>
+import { fetchData } from '../../api/index';
+export default {
+    name: 'basetable',
+    data() {
+        return {
+            options1:[{
+                value:0,
+                label:"正常"
+            },{
+                value:1,
+                label:"故障"
+            }],
+            options2:[{
+                value:0,
+                label:"空闲"
+            },{
+                value:1,
+                label:"占用"
+            }],
+            query: {
+                address: '',
+                name: '',
+                pageIndex: 1,
+                pageSize: 10
+            },
+            tableData: [],
+            multipleSelection: [],
+            delList: [],
+            editVisible: false,
+            pageTotal: 0,
+            form: {},
+            idx: -1,
+            id: -1
+        };
+    },
+    created() {
+        this.getData();
+    },
+    methods: {
+        // 获取 easy-mock 的模拟数据
+        getData() {
+            fetchData(this.query).then(res => {
+                console.log(res);
+                this.tableData = res.list;
+                this.pageTotal = res.pageTotal || 50;
+            });
+        },
+        // 编辑操作
+        handleEdit(index, row) {
+            this.idx = index;
+            this.form = row;
+            this.editVisible = true;
+        },
+        // 保存编辑
+        saveEdit() {
+            this.editVisible = false;
+            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+            this.$set(this.tableData, this.idx, this.form);
+        },
+        // 分页导航
+        handlePageChange(val) {
+            this.$set(this.query, 'pageIndex', val);
+            this.getData();
+        }
+    }
+};
+</script>
+
+<style scoped>
+.handle-box {
+    margin-bottom: 20px;
+}
+
+.handle-select {
+    width: 120px;
+}
+
+.handle-input {
+    width: 300px;
+    display: inline-block;
+}
+.table {
+    width: 100%;
+    font-size: 14px;
+}
+.red {
+    color: #ff0000;
+}
+.mr10 {
+    margin-right: 10px;
+}
+.table-td-thumb {
+    display: block;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+}
+</style>
