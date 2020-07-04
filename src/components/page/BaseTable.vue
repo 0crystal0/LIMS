@@ -157,11 +157,55 @@ export default {
                 pageIndex: 1,
                 pageSize: 10
             },
-            tableData: [],
+            tableData: [{
+                "id": "会议室1",
+                "location": "501",
+                "capacity": 40,
+                "projectorState": 0,
+                "computerAll": 10,
+                "computerBad": 0,
+                "state": 1
+            },
+            {
+                "id": "会议室2",
+                "location": "502",
+                "capacity": 80,
+                "projectorState": 0,
+                "computerAll": 20,
+                "computerBad": 0,
+                "state": 0
+            },
+            {
+                "id": "会议室3",
+                "location": "503",
+                "capacity": 80,
+                "projectorState": 0,
+                "computerAll": 20,
+                "computerBad": 0,
+                "state": 0
+            },
+            {
+                "id": "会议室4",
+                "location": "601",
+                "capacity": 120,
+                "projectorState": 0,
+                "computerAll": 30,
+                "computerBad": 0,
+                "state": 0
+            },
+            {
+                "id": "会议室5",
+                "location": "602",
+                "capacity": 120,
+                "projectorState": 1,
+                "computerAll": 40,
+                "computerBad": 1,
+                "state": 0
+            }],
             multipleSelection: [],
             delList: [],
             editVisible: false,
-            pageTotal: 0,
+            pageTotal: 5,
             form: {},
             idx: -1,
             id: -1
@@ -175,8 +219,6 @@ export default {
         getData() {
             fetchData(this.query).then(res => {
                 console.log(res);
-                this.tableData = res.list;
-                this.pageTotal = res.pageTotal || 50;
             });
         },
         // 编辑操作
