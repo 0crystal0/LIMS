@@ -1,6 +1,6 @@
 # 实验室管理系统
 
-练手给好朋友开发的一个基于elementUI+Vue+node.js的小项目
+练手给~~好朋友~~女朋友开发的一个基于elementUI+Vue+node.js的小项目
 
 1天速成
 
